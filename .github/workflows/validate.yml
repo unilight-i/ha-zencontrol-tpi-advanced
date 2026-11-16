@@ -20,7 +20,9 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          ignore: brands
+          # brands: no logo in the Home Assistant brands repository
+          # license: PolyForm Shield is not an open-source licence; that is only required for the catalog
+          ignore: brands license
 
   tests:
     name: Tests
