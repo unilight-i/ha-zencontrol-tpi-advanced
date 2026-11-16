@@ -3,6 +3,11 @@
 Numer wersji jest w `custom_components/unilight_zen_tpi_advanced/manifest.json`.
 Wersje do 0.6.2 nosiły domenę `zencontrol_tpi` i nie były publikowane.
 
+## 0.7.1
+
+- Instrukcja instalacji krok po kroku ze zrzutami ekranu: `docs/INSTALACJA.md`.
+- Krótszy opis repozytorium. Bez zmian w działaniu integracji.
+
 ## 0.7.0
 
 Pierwsza wersja publiczna, instalowana przez Marketplace w Home Assistant.

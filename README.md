@@ -12,17 +12,20 @@ Sterowanie oświetleniem DALI z kontrolera zencontrol w Home Assistant: lokalnie
 
 ## Instalacja
 
-1. Kliknij przycisk:
+**[Instrukcja krok po kroku ze zrzutami ekranu](docs/INSTALACJA.md)**
 
-   [![Otwórz w Home Assistant](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=unilight-i&repository=ha-zencontrol-tpi-advanced&category=integration)
+W skrócie:
 
-   Za pierwszym razem strona zapyta o adres Twojego Home Assistanta. Wpisz ten sam adres, pod którym
-   otwierasz go w przeglądarce, na przykład `http://homeassistant.local:8123` albo `http://192.168.1.50:8123`.
-2. Jeśli Home Assistant poprosi o połączenie z kontem GitHub, potwierdź je (konto jest darmowe, robi się to raz).
-3. Kliknij **Pobierz**, a potem **Uruchom ponownie**, gdy Home Assistant o to poprosi.
-4. Otwórz **Ustawienia → Urządzenia oraz usługi**. Kontroler jest na liście wykrytych: kliknij **Dodaj**.
+1. W Home Assistancie otwórz **Ustawienia → Katalog społeczności** i kliknij **Dodaj z linku**.
+2. Wklej ten link i kliknij **Utwórz**:
 
-   Nie ma go tam? Kliknij **Dodaj integrację**, wpisz `zencontrol` i wybierz kontroler z listy.
+   ```
+   https://github.com/unilight-i/ha-zencontrol-tpi-advanced
+   ```
+
+3. Za pierwszym razem Home Assistant poprosi o połączenie z kontem GitHub (darmowe, robi się to raz).
+4. Kliknij **Zainstaluj**.
+5. Wybierz swój kontroler z listy znalezionych i kliknij **Zatwierdź**.
 
 Gotowe. Każda nazwana oprawa i każda grupa z zencontrol jest teraz światłem w Home Assistant.
 
@@ -35,8 +38,9 @@ Gotowe. Każda nazwana oprawa i każda grupa z zencontrol jest teraz światłem 
 
 ## Czujniki ruchu i klawisze paneli
 
-Są domyślnie wyłączone. Włączysz je tak: **Ustawienia → Urządzenia oraz usługi → zencontrol TPI Advanced →
-Konfiguruj**, zaznacz „Pokaż czujniki ruchu” lub „Pokaż klawisze paneli ściennych” i zapisz.
+Są domyślnie ukryte. Włączysz je tak: **Ustawienia → Urządzenia oraz usługi → zencontrol TPI Advanced**,
+koło zębate przy kontrolerze, zaznacz „Pokaż czujniki ruchu” lub „Pokaż klawisze paneli ściennych” i zatwierdź.
+Zrzut ekranu jest w [instrukcji](docs/INSTALACJA.md#czujniki-ruchu-i-klawisze-paneli-opcjonalnie).
 
 ## Gdy coś nie działa
 
