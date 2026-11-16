@@ -332,7 +332,8 @@ async def test_sensors_and_keys_are_off_until_switched_on_in_options(hass: HomeA
     await arrive(hass)
     assert control_entities(hass, entry) == ([], [])        # nothing appears with the first event either
     # automations on the bus event keep working, and events still prove themselves
-    assert [e["type"] for e in bus] == ["occupancy", "button_press", "occupancy", "button_press"]
+    # (UDP does not keep the order of packets sent this close together)
+    assert sorted(e["type"] for e in bus) == ["button_press", "button_press", "occupancy", "occupancy"]
     assert hass.states.get("sensor.walizka_testowa_last_event").state not in ("unknown", "unavailable")
 
 
