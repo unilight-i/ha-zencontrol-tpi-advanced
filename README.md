@@ -13,6 +13,7 @@ Sterowanie oświetleniem DALI z kontrolera zencontrol w Home Assistant: lokalnie
 ## Instalacja
 
 **[Instrukcja krok po kroku ze zrzutami ekranu](docs/INSTALACJA.md)**
+(także jako [PDF do pobrania](https://github.com/unilight-i/ha-zencontrol-tpi-advanced/raw/main/docs/Instrukcja_zencontrol_Home_Assistant.pdf))
 
 W skrócie:
 
