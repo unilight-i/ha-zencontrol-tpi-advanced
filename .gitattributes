@@ -1,0 +1,17 @@
+# Jednakowe konce linii na kazdym komputerze (Windows, Linux, serwer)
+* text=auto
+*.py   text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.css  text eol=lf
+# Pliki uruchamiane dwuklikiem w Windows musza miec CRLF
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+# Pliki binarne: bez zadnej konwersji
+*.png   binary
+*.pdf   binary
+*.woff2 binary
+*.zip   binary

@@ -1,0 +1,247 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "pick": {
+        "title": "zencontrol controllers found",
+        "description": "These controllers answered in your network. Choose the one to add. If yours is missing, choose the last entry and type its address.",
+        "data": {
+          "controller": "Controller"
+        }
+      },
+      "manual": {
+        "title": "zencontrol TPI Advanced (Unilight)",
+        "description": "Local connection to a zencontrol controller over TPI Advanced (UDP). The controller needs the TPI Advanced licence and must be on the same network as this computer.",
+        "data": {
+          "host": "Controller IP",
+          "port": "UDP port",
+          "skip_test": "Skip connection test"
+        },
+        "data_description": {
+          "host": "IP address of the controller in the local network.",
+          "port": "TPI uses UDP port 5108.",
+          "skip_test": "Tick only when you are sure TPI is on but the test fails."
+        }
+      },
+      "confirm": {
+        "title": "zencontrol controller found",
+        "description": "Add the controller **{name}** ({host}) to Home Assistant?"
+      },
+      "reconfigure": {
+        "title": "Change controller address",
+        "description": "Use this when the controller got a new IP address. Devices and entities stay as they are.",
+        "data": {
+          "host": "Controller IP",
+          "port": "UDP port",
+          "skip_test": "Skip connection test"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No reply from the controller. Check the IP address, that this computer is in the same network as the controller, and that TPI is enabled.",
+      "paid_feature": "The controller answered PAID_FEATURE: TPI Advanced is not licensed or not enabled on this controller.",
+      "unexpected_reply": "The controller answered with an error. See Settings > System > Logs (search for zencontrol)."
+    },
+    "abort": {
+      "already_configured": "This controller is already added.",
+      "reconfigure_successful": "Address changed.",
+      "not_tpi_controller": "The device did not answer as a zencontrol controller with TPI Advanced."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "zencontrol TPI settings",
+        "data": {
+          "scan_interval": "Read levels from the controller every (seconds, 5-600)",
+          "include_unlabelled": "Also show fixtures without a label in zencontrol",
+          "events_enabled": "Receive events from the controller (instant light states, motion sensors, panel keys)",
+          "event_host": "IP address of this computer (where the controller sends events). Leave empty to detect it automatically",
+          "event_port": "UDP port for events",
+          "sensors_enabled": "Show motion sensors",
+          "buttons_enabled": "Show keys of wall panels",
+          "occupancy_hold": "Motion sensor shows \"clear\" after (seconds without motion, 5-3600)"
+        },
+        "data_description": {
+          "scan_interval": "How quickly changes made from wall panels show up in Home Assistant.",
+          "include_unlabelled": "Fixtures without a label are usually leftovers in the controller's database.",
+          "events_enabled": "The integration tells the controller to send its events to the address below. The setting is not permanent on the controller: it disappears when the controller restarts and the integration sets it again.",
+          "event_host": "The address of the computer running Home Assistant in the local network, the same one you type on the phone. Leave it empty when Home Assistant is in the same network as the controller; type it when Home Assistant runs in Docker with its own network or in a virtual machine behind NAT.",
+          "event_port": "If Home Assistant runs in Docker, this UDP port must be published to the container (for example 6969:6969/udp).",
+          "sensors_enabled": "Each motion sensor becomes a binary sensor. Needs receiving events switched on.",
+          "buttons_enabled": "Each key becomes an event entity (press / hold) for automations. Needs receiving events switched on."
+        }
+      }
+    },
+    "error": {
+      "event_host_required": "The address of this computer could not be detected. Enter its IPv4 address, for example 192.168.1.57.",
+      "event_host_is_controller": "This is the controller's address. Enter the address of the computer running Home Assistant."
+    }
+  },
+  "entity": {
+    "button": {
+      "all_on": {
+        "name": "All on"
+      },
+      "all_off": {
+        "name": "All off"
+      }
+    },
+    "sensor": {
+      "last_event": {
+        "name": "Last event"
+      }
+    },
+    "event": {
+      "button": {
+        "name": "Button {number}",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "press": "Press",
+              "hold": "Hold"
+            }
+          }
+        }
+      }
+    }
+  },
+  "services": {
+    "send_command": {
+      "name": "Send TPI command",
+      "description": "Sends one basic TPI frame. The start byte 04, sequence number and checksum are added automatically. Returns the controller's reply.",
+      "fields": {
+        "command": {
+          "name": "Command",
+          "description": "Command byte, for example 0x1C (controller version) or 0xA2 (arc level)."
+        },
+        "address": {
+          "name": "Address byte",
+          "description": "0-63 short address, 64+n group n, 255 broadcast. For queries about groups use the group number."
+        },
+        "data": {
+          "name": "Data",
+          "description": "Up to 3 data bytes, for example 0x00 0x00 0xFE."
+        },
+        "host": {
+          "name": "Controller IP",
+          "description": "Only needed when more than one controller is added."
+        }
+      }
+    },
+    "send_raw": {
+      "name": "Send raw bytes",
+      "description": "Sends your hex bytes exactly as typed. Returns the controller's reply.",
+      "fields": {
+        "payload": {
+          "name": "Bytes (hex)",
+          "description": "Whole frame, for example 04 00 A9 FF 00 00 00."
+        },
+        "add_checksum": {
+          "name": "Add checksum",
+          "description": "Append the XOR checksum to the bytes."
+        },
+        "host": {
+          "name": "Controller IP",
+          "description": "Only needed when more than one controller is added."
+        }
+      }
+    },
+    "arc_level": {
+      "name": "Set arc level",
+      "description": "DALI direct arc level (0-254) for a fixture, a group or the whole line.",
+      "fields": {
+        "address": {
+          "name": "Fixture address",
+          "description": "DALI short address 0-63. Give exactly one of: address, group, broadcast."
+        },
+        "group": {
+          "name": "Group",
+          "description": "DALI group 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Send to the whole DALI line."
+        },
+        "host": {
+          "name": "Controller IP",
+          "description": "Only needed when more than one controller is added."
+        },
+        "level": {
+          "name": "Arc level",
+          "description": "0 = off, 254 = maximum."
+        }
+      }
+    },
+    "recall_scene": {
+      "name": "Recall scene",
+      "description": "Recalls a DALI scene on a fixture, a group or the whole line.",
+      "fields": {
+        "address": {
+          "name": "Fixture address",
+          "description": "DALI short address 0-63. Give exactly one of: address, group, broadcast."
+        },
+        "group": {
+          "name": "Group",
+          "description": "DALI group 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Send to the whole DALI line."
+        },
+        "host": {
+          "name": "Controller IP",
+          "description": "Only needed when more than one controller is added."
+        },
+        "scene": {
+          "name": "Scene",
+          "description": "Scene number 0-11."
+        }
+      }
+    },
+    "turn_on": {
+      "name": "Turn on (recall max)",
+      "description": "DALI RECALL MAX for a fixture, a group or the whole line.",
+      "fields": {
+        "address": {
+          "name": "Fixture address",
+          "description": "DALI short address 0-63. Give exactly one of: address, group, broadcast."
+        },
+        "group": {
+          "name": "Group",
+          "description": "DALI group 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Send to the whole DALI line."
+        },
+        "host": {
+          "name": "Controller IP",
+          "description": "Only needed when more than one controller is added."
+        }
+      }
+    },
+    "turn_off": {
+      "name": "Turn off",
+      "description": "DALI OFF for a fixture, a group or the whole line.",
+      "fields": {
+        "address": {
+          "name": "Fixture address",
+          "description": "DALI short address 0-63. Give exactly one of: address, group, broadcast."
+        },
+        "group": {
+          "name": "Group",
+          "description": "DALI group 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Send to the whole DALI line."
+        },
+        "host": {
+          "name": "Controller IP",
+          "description": "Only needed when more than one controller is added."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+send_command:
+  fields:
+    command:
+      required: true
+      example: "0x1C"
+      selector:
+        text:
+    address:
+      example: "0"
+      default: "0"
+      selector:
+        text:
+    data:
+      example: "0x00 0x00 0xFE"
+      selector:
+        text:
+    host:
+      example: "192.168.1.100"
+      selector:
+        text:
+
+send_raw:
+  fields:
+    payload:
+      required: true
+      example: "04 00 A9 FF 00 00 00"
+      selector:
+        text:
+    add_checksum:
+      default: false
+      selector:
+        boolean:
+    host:
+      example: "192.168.1.100"
+      selector:
+        text:
+
+arc_level:
+  fields:
+    address: &address
+      example: 58
+      selector:
+        number:
+          min: 0
+          max: 63
+          mode: box
+    group: &group
+      example: 2
+      selector:
+        number:
+          min: 0
+          max: 15
+          mode: box
+    broadcast: &broadcast
+      selector:
+        boolean:
+    level:
+      required: true
+      example: 254
+      selector:
+        number:
+          min: 0
+          max: 254
+          mode: slider
+    host: &host
+      example: "192.168.1.100"
+      selector:
+        text:
+
+recall_scene:
+  fields:
+    address: *address
+    group: *group
+    broadcast: *broadcast
+    scene:
+      required: true
+      example: 1
+      selector:
+        number:
+          min: 0
+          max: 11
+          mode: box
+    host: *host
+
+turn_on:
+  fields:
+    address: *address
+    group: *group
+    broadcast: *broadcast
+    host: *host
+
+turn_off:
+  fields:
+    address: *address
+    group: *group
+    broadcast: *broadcast
+    host: *host

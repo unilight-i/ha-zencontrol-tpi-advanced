@@ -1,0 +1,22 @@
+{
+  "domain": "unilight_zen_tpi_advanced",
+  "name": "zencontrol TPI Advanced (Unilight)",
+  "codeowners": [
+    "@unilight-i"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "network"
+  ],
+  "dhcp": [
+    {
+      "macaddress": "7CBACC*"
+    }
+  ],
+  "documentation": "https://github.com/unilight-i/ha-zencontrol-tpi-advanced",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/unilight-i/ha-zencontrol-tpi-advanced/issues",
+  "requirements": [],
+  "version": "0.7.0"
+}

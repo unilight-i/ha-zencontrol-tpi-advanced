@@ -1,0 +1,247 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "pick": {
+        "title": "Znalezione kontrolery zencontrol",
+        "description": "Te kontrolery odpowiedziały w Twojej sieci. Wybierz ten, który chcesz dodać. Jeśli Twojego nie ma na liście, wybierz ostatnią pozycję i wpisz adres.",
+        "data": {
+          "controller": "Kontroler"
+        }
+      },
+      "manual": {
+        "title": "zencontrol TPI Advanced (Unilight)",
+        "description": "Lokalne połączenie z kontrolerem zencontrol przez TPI Advanced (UDP). Kontroler musi mieć licencję TPI Advanced i być w tej samej sieci co ten komputer.",
+        "data": {
+          "host": "IP kontrolera",
+          "port": "Port UDP",
+          "skip_test": "Pomiń test połączenia"
+        },
+        "data_description": {
+          "host": "Adres IP kontrolera w sieci lokalnej.",
+          "port": "TPI używa portu UDP 5108.",
+          "skip_test": "Zaznacz tylko, gdy TPI na pewno jest włączone, a test nie przechodzi."
+        }
+      },
+      "confirm": {
+        "title": "Znaleziono kontroler zencontrol",
+        "description": "Dodać kontroler **{name}** ({host}) do Home Assistanta?"
+      },
+      "reconfigure": {
+        "title": "Zmiana adresu kontrolera",
+        "description": "Użyj, gdy kontroler dostał nowy adres IP. Urządzenia i encje zostają bez zmian.",
+        "data": {
+          "host": "IP kontrolera",
+          "port": "Port UDP",
+          "skip_test": "Pomiń test połączenia"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kontroler nie odpowiada. Sprawdź adres IP, czy ten komputer jest w tej samej sieci co kontroler i czy TPI jest włączone.",
+      "paid_feature": "Kontroler odpowiedział PAID_FEATURE: TPI Advanced nie jest licencjonowane albo włączone na tym kontrolerze.",
+      "unexpected_reply": "Kontroler odpowiedział błędem. Zobacz Ustawienia > System > Dzienniki (szukaj zencontrol)."
+    },
+    "abort": {
+      "already_configured": "Ten kontroler jest już dodany.",
+      "reconfigure_successful": "Adres zmieniony.",
+      "not_tpi_controller": "Urządzenie nie odpowiedziało jak kontroler zencontrol z TPI Advanced."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia zencontrol TPI",
+        "data": {
+          "scan_interval": "Odczyt poziomów z kontrolera co (sekundy, 5-600)",
+          "include_unlabelled": "Pokaż też oprawy bez nazwy w zencontrol",
+          "events_enabled": "Odbieraj zdarzenia z kontrolera (natychmiastowy stan świateł, czujniki ruchu, klawisze paneli)",
+          "event_host": "Adres IP tego komputera (tam kontroler wysyła zdarzenia). Zostaw puste, aby wykryć go automatycznie",
+          "event_port": "Port UDP dla zdarzeń",
+          "sensors_enabled": "Pokaż czujniki ruchu",
+          "buttons_enabled": "Pokaż klawisze paneli ściennych",
+          "occupancy_hold": "Czujnik ruchu pokazuje \"brak ruchu\" po (sekundy bez ruchu, 5-3600)"
+        },
+        "data_description": {
+          "scan_interval": "Jak szybko zmiany z paneli ściennych pojawiają się w Home Assistant.",
+          "include_unlabelled": "Oprawy bez nazwy to zwykle pozostałości w bazie kontrolera.",
+          "events_enabled": "Integracja każe kontrolerowi wysyłać zdarzenia na poniższy adres. To ustawienie nie jest trwałe: znika po restarcie kontrolera, a integracja ustawia je ponownie.",
+          "event_host": "Adres komputera z Home Assistantem w sieci lokalnej, ten sam, który wpisujesz w telefonie. Zostaw puste, gdy Home Assistant jest w tej samej sieci co kontroler; wpisz go, gdy Home Assistant działa w Dockerze z własną siecią albo w maszynie wirtualnej za NAT-em.",
+          "event_port": "Jeśli Home Assistant działa w Dockerze, ten port UDP musi być przekazany do kontenera (na przykład 6969:6969/udp).",
+          "sensors_enabled": "Każdy czujnik ruchu staje się czujnikiem binarnym. Wymaga włączonego odbioru zdarzeń.",
+          "buttons_enabled": "Każdy klawisz staje się encją zdarzenia (naciśnięcie / przytrzymanie) dla automatyzacji. Wymaga włączonego odbioru zdarzeń."
+        }
+      }
+    },
+    "error": {
+      "event_host_required": "Nie udało się wykryć adresu tego komputera. Wpisz jego adres IPv4, na przykład 192.168.1.57.",
+      "event_host_is_controller": "To jest adres kontrolera. Wpisz adres komputera z Home Assistantem."
+    }
+  },
+  "entity": {
+    "button": {
+      "all_on": {
+        "name": "Wszystko na max"
+      },
+      "all_off": {
+        "name": "Wyłącz wszystko"
+      }
+    },
+    "sensor": {
+      "last_event": {
+        "name": "Ostatnie zdarzenie"
+      }
+    },
+    "event": {
+      "button": {
+        "name": "Przycisk {number}",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "press": "Naciśnięcie",
+              "hold": "Przytrzymanie"
+            }
+          }
+        }
+      }
+    }
+  },
+  "services": {
+    "send_command": {
+      "name": "Wyślij polecenie TPI",
+      "description": "Wysyła jedną podstawową ramkę TPI. Bajt startu 04, numer sekwencji i suma kontrolna są dodawane automatycznie. Zwraca odpowiedź kontrolera.",
+      "fields": {
+        "command": {
+          "name": "Polecenie",
+          "description": "Bajt polecenia, np. 0x1C (wersja kontrolera) albo 0xA2 (poziom arc)."
+        },
+        "address": {
+          "name": "Bajt adresu",
+          "description": "0-63 krótki adres, 64+n grupa n, 255 broadcast. W zapytaniach o grupy podaj numer grupy."
+        },
+        "data": {
+          "name": "Dane",
+          "description": "Do 3 bajtów danych, np. 0x00 0x00 0xFE."
+        },
+        "host": {
+          "name": "IP kontrolera",
+          "description": "Potrzebne tylko, gdy dodano więcej niż jeden kontroler."
+        }
+      }
+    },
+    "send_raw": {
+      "name": "Wyślij surowe bajty",
+      "description": "Wysyła bajty hex dokładnie tak, jak wpisano. Zwraca odpowiedź kontrolera.",
+      "fields": {
+        "payload": {
+          "name": "Bajty (hex)",
+          "description": "Cała ramka, np. 04 00 A9 FF 00 00 00."
+        },
+        "add_checksum": {
+          "name": "Dodaj sumę kontrolną",
+          "description": "Dopisz sumę XOR na końcu."
+        },
+        "host": {
+          "name": "IP kontrolera",
+          "description": "Potrzebne tylko, gdy dodano więcej niż jeden kontroler."
+        }
+      }
+    },
+    "arc_level": {
+      "name": "Ustaw poziom arc",
+      "description": "Bezpośredni poziom DALI (0-254) dla oprawy, grupy albo całej linii.",
+      "fields": {
+        "address": {
+          "name": "Adres oprawy",
+          "description": "Krótki adres DALI 0-63. Podaj dokładnie jedno: adres, grupę albo broadcast."
+        },
+        "group": {
+          "name": "Grupa",
+          "description": "Grupa DALI 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Wyślij do całej linii DALI."
+        },
+        "host": {
+          "name": "IP kontrolera",
+          "description": "Potrzebne tylko, gdy dodano więcej niż jeden kontroler."
+        },
+        "level": {
+          "name": "Poziom arc",
+          "description": "0 = wyłączone, 254 = maksimum."
+        }
+      }
+    },
+    "recall_scene": {
+      "name": "Wywołaj scenę",
+      "description": "Wywołuje scenę DALI na oprawie, grupie albo całej linii.",
+      "fields": {
+        "address": {
+          "name": "Adres oprawy",
+          "description": "Krótki adres DALI 0-63. Podaj dokładnie jedno: adres, grupę albo broadcast."
+        },
+        "group": {
+          "name": "Grupa",
+          "description": "Grupa DALI 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Wyślij do całej linii DALI."
+        },
+        "host": {
+          "name": "IP kontrolera",
+          "description": "Potrzebne tylko, gdy dodano więcej niż jeden kontroler."
+        },
+        "scene": {
+          "name": "Scena",
+          "description": "Numer sceny 0-11."
+        }
+      }
+    },
+    "turn_on": {
+      "name": "Włącz (recall max)",
+      "description": "DALI RECALL MAX dla oprawy, grupy albo całej linii.",
+      "fields": {
+        "address": {
+          "name": "Adres oprawy",
+          "description": "Krótki adres DALI 0-63. Podaj dokładnie jedno: adres, grupę albo broadcast."
+        },
+        "group": {
+          "name": "Grupa",
+          "description": "Grupa DALI 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Wyślij do całej linii DALI."
+        },
+        "host": {
+          "name": "IP kontrolera",
+          "description": "Potrzebne tylko, gdy dodano więcej niż jeden kontroler."
+        }
+      }
+    },
+    "turn_off": {
+      "name": "Wyłącz",
+      "description": "DALI OFF dla oprawy, grupy albo całej linii.",
+      "fields": {
+        "address": {
+          "name": "Adres oprawy",
+          "description": "Krótki adres DALI 0-63. Podaj dokładnie jedno: adres, grupę albo broadcast."
+        },
+        "group": {
+          "name": "Grupa",
+          "description": "Grupa DALI 0-15."
+        },
+        "broadcast": {
+          "name": "Broadcast",
+          "description": "Wyślij do całej linii DALI."
+        },
+        "host": {
+          "name": "IP kontrolera",
+          "description": "Potrzebne tylko, gdy dodano więcej niż jeden kontroler."
+        }
+      }
+    }
+  }
+}

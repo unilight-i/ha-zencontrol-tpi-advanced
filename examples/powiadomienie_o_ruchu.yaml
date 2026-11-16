@@ -1,0 +1,24 @@
+# Przykład automatyzacji: powiadomienie na telefon, gdy czujnik ruchu zencontrol wykryje ruch.
+# Wklej do automations.yaml i zamień notify.twoj_telefon na encję powiadomień swojego telefonu
+# (Ustawienia -> Urządzenia oraz usługi -> Rejestr encji, szukaj "notify").
+# Wymaga włączonych zdarzeń w ustawieniach integracji.
+- id: zencontrol_pir_powiadomienie
+  alias: "Walizka: powiadomienie o ruchu (PIR)"
+  description: >-
+    Wysyła powiadomienie na telefon, gdy czujnik ruchu zencontrol wykryje ruch.
+    Najwyżej jedno powiadomienie na minutę. Wyłączysz je przełącznikiem tej automatyzacji.
+  triggers:
+    - trigger: event
+      event_type: unilight_zen_tpi_advanced_event
+      event_data:
+        type: occupancy
+  actions:
+    - action: notify.send_message
+      target:
+        entity_id: notify.twoj_telefon
+      data:
+        title: "Walizka zencontrol"
+        message: "Czujnik {{ trigger.event.data.name }} wykrył ruch o {{ now().strftime('%H:%M:%S') }}."
+    - delay: "00:01:00"
+  mode: single
+  max_exceeded: silent
