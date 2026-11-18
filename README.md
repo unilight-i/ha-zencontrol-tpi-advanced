@@ -47,11 +47,11 @@ Zrzut ekranu jest w [instrukcji](docs/INSTALACJA.md#czujniki-ruchu-i-klawisze-pa
 
 | Co widzisz | Co zrobić |
 |---|---|
-| Kontrolera nie ma na liście | Sprawdź, czy Home Assistant i kontroler są w tej samej sieci. Jeśli Home Assistant działa w Dockerze albo w maszynie wirtualnej, wybierz „Wpisz adres ręcznie” i podaj adres IP kontrolera. |
-| Nie znam adresu IP kontrolera | Zobacz listę urządzeń w routerze albo uruchom `ZNAJDZ_KONTROLER.bat` z folderu [`tools`](tools/) na komputerze w tej samej sieci. |
+| Kontrolera nie ma na liście | Sprawdź, czy Home Assistant i kontroler są w tej samej sieci. Jeśli Home Assistant działa w Dockerze albo w maszynie wirtualnej, wybierz „Wpisz adres ręcznie” i podaj adres IP kontrolera albo trzy pierwsze liczby adresu sieci (np. `192.168.1`). |
+| Nie znam adresu IP kontrolera | W polu adresu wpisz trzy pierwsze liczby adresu swojej sieci (np. `192.168.1`), a Home Assistant ją przeszuka. Możesz też zobaczyć listę urządzeń w routerze albo uruchomić `ZNAJDZ_KONTROLER.bat` z folderu [`tools`](tools/) na komputerze w tej samej sieci. |
 | „Kontroler nie odpowiada” | Zły adres IP, inna sieć albo wyłączone TPI na kontrolerze. |
 | „Kontroler odpowiedział PAID_FEATURE” | Kontroler nie ma licencji TPI Advanced. Skontaktuj się ze sprzedawcą. |
-| Światła działają, ale stan odświeża się z opóźnieniem, a czujniki milczą | Zdarzenia nie docierają. W „Konfiguruj” włącz odbiór zdarzeń. W Dockerze wpisz tam adres IP komputera z Home Assistantem i przekaż do kontenera port UDP 6969. |
+| Światła działają, ale stan odświeża się z opóźnieniem, a czujniki milczą | Zdarzenia nie docierają. W „Konfiguruj” włącz odbiór zdarzeń. W Dockerze wpisz tam adres IP komputera z Home Assistantem i przekaż do kontenera port UDP 6969 (każdy kolejny kontroler używa następnego: 6970, 6971...). |
 
 Nie pomogło? [Zgłoś problem](https://github.com/unilight-i/ha-zencontrol-tpi-advanced/issues) i podaj wersję
 Home Assistanta, firmware kontrolera oraz fragment logu (Ustawienia → System → Logi, szukaj `zencontrol`).

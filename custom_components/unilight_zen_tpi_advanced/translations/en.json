@@ -11,14 +11,28 @@
       },
       "manual": {
         "title": "zencontrol TPI Advanced (Unilight)",
-        "description": "Local connection to a zencontrol controller over TPI Advanced (UDP). The controller needs the TPI Advanced licence and must be on the same network as this computer.",
+        "description": "Type the IP address of the controller. If you do not know it, type the first three numbers of your network (for example 192.168.1) and Home Assistant will search it. The controller needs the TPI Advanced licence.",
         "data": {
-          "host": "Controller IP",
+          "host": "Controller IP address, or network to search",
           "port": "UDP port",
           "skip_test": "Skip connection test"
         },
         "data_description": {
-          "host": "IP address of the controller in the local network.",
+          "host": "For example 192.168.1.57. To search a whole network, type the first three numbers of its addresses, for example 192.168.1 (the same as in the address of your router).",
+          "port": "TPI uses UDP port 5108.",
+          "skip_test": "Tick only when you are sure TPI is on but the test fails."
+        }
+      },
+      "not_found": {
+        "title": "No controller found automatically",
+        "description": "Home Assistant searched its own network and found no zencontrol controller to add. This is normal when Home Assistant runs in Docker or in a virtual machine, or when the controller is in another network.\n\nType the IP address of the controller. If you do not know it, type the first three numbers of your network (for example 192.168.1) and Home Assistant will search it.",
+        "data": {
+          "host": "Controller IP address, or network to search",
+          "port": "UDP port",
+          "skip_test": "Skip connection test"
+        },
+        "data_description": {
+          "host": "For example 192.168.1.57. To search a whole network, type the first three numbers of its addresses, for example 192.168.1 (the same as in the address of your router).",
           "port": "TPI uses UDP port 5108.",
           "skip_test": "Tick only when you are sure TPI is on but the test fails."
         }
@@ -40,7 +54,9 @@
     "error": {
       "cannot_connect": "No reply from the controller. Check the IP address, that this computer is in the same network as the controller, and that TPI is enabled.",
       "paid_feature": "The controller answered PAID_FEATURE: TPI Advanced is not licensed or not enabled on this controller.",
-      "unexpected_reply": "The controller answered with an error. See Settings > System > Logs (search for zencontrol)."
+      "unexpected_reply": "The controller answered with an error. See Settings > System > Logs (search for zencontrol).",
+      "none_in_network": "No zencontrol controller to add was found in this network. Check the numbers, and that the controller is switched on and connected.",
+      "search_local_only": "Only a local network can be searched: its addresses start with 192.168., 10. or 172.16-172.31."
     },
     "abort": {
       "already_configured": "This controller is already added.",
@@ -74,6 +90,8 @@
       }
     },
     "error": {
+      "events_required": "Motion sensors and panel keys need events from the controller. Tick this box.",
+      "event_port_in_use": "Another controller already receives its events on this port. Choose another one, for example the next number.",
       "event_host_required": "The address of this computer could not be detected. Enter its IPv4 address, for example 192.168.1.57.",
       "event_host_is_controller": "This is the controller's address. Enter the address of the computer running Home Assistant."
     }

@@ -538,7 +538,9 @@ class TpiClient:
         reply = await self.request(CMD_QUERY_TPI_EVENT_UNICAST_ADDRESS)
         if reply.answered and len(reply.data) == 7:
             d = reply.data
-            return d[0], (d[1] << 8) | d[2], ".".join(str(b) for b in d[3:7])
+            # The controller answers with the port low byte first, although SET takes it high byte first
+            # (firmware 2.2.145 and 2.2.160: port 6969 = 0x1B39 comes back as 39 1B).
+            return d[0], d[1] | (d[2] << 8), ".".join(str(b) for b in d[3:7])
         return None
 
     async def set_event_unicast(self, ip: str, port: int) -> TpiReply:

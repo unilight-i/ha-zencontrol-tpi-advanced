@@ -3,6 +3,24 @@
 Numer wersji jest w `custom_components/unilight_zen_tpi_advanced/manifest.json`.
 Wersje do 0.6.2 nosiły domenę `zencontrol_tpi` i nie były publikowane.
 
+## 0.7.2
+
+- **Gdy wyszukiwanie nic nie znajdzie, formularz to mówi** i wyjaśnia dlaczego (Home Assistant w Dockerze
+  albo w maszynie wirtualnej, kontroler w innej sieci). Wcześniej pokazywało się samo pole na adres IP.
+- **Przeszukanie wskazanej sieci:** w polu adresu można wpisać trzy pierwsze liczby adresu sieci
+  (np. `192.168.1`). Integracja pyta wtedy po kolei wszystkie 254 adresy i pokazuje listę znalezionych
+  kontrolerów. Działa także tam, gdzie zwykłe wyszukiwanie nie sięga.
+- **Adres, który nie odpowiada:** integracja sprawdza sąsiednie adresy i proponuje znalezione kontrolery
+  (pomyłka w adresie, adres zmieniony przez router).
+- Przeszukiwane są tylko sieci lokalne.
+- **Drugi kontroler w Dockerze albo za NAT-em:** adres komputera z Home Assistantem wpisany przy pierwszym
+  kontrolerze jest używany także dla następnego w tej samej sieci, na kolejnym wolnym porcie (6970, 6971...).
+  Ustawienia podpowiadają wolny port i nie przyjmują portu zajętego przez inny kontroler.
+- **Poprawka:** integracja niepotrzebnie ponawiała ustawienie zdarzeń na kontrolerze przy każdym odczycie,
+  bo błędnie czytała numer portu z jego odpowiedzi.
+- **Ustawienia:** zaznaczenie czujników ruchu albo klawiszy paneli bez odbioru zdarzeń kończy się
+  komunikatem. Wcześniej formularz to przyjmował, a czujniki i klawisze się nie pojawiały.
+
 ## 0.7.1
 
 - Instrukcja instalacji krok po kroku ze zrzutami ekranu: `docs/INSTALACJA.md`.

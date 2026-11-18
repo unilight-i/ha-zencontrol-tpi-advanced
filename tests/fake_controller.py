@@ -204,7 +204,7 @@ class FakeController(asyncio.DatagramProtocol):
             return reply(OK, seq)
         if cmd == 0x41:
             port, ip = self.unicast
-            return reply(ANSWER, seq, bytes([self.event_flags, port >> 8, port & 0xFF, *(int(x) for x in ip.split("."))]))
+            return reply(ANSWER, seq, bytes([self.event_flags, port & 0xFF, port >> 8, *(int(x) for x in ip.split("."))]))
         if cmd == 0x16:
             found = [64 + n for n in sorted(self.ecds) if 64 + n >= d[2] and n != 7]
             return reply(ANSWER, seq, bytes(found)) if found else reply(NO_ANSWER, seq)

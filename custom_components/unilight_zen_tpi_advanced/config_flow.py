@@ -2,7 +2,8 @@
 
 Ways in:
   user   - "Add integration": the network is searched; found controllers are offered as a list,
-           with "enter the address manually" as the last choice (the only one when nothing is found)
+           with "enter the address manually" as the last choice. When nothing is found the form says
+           so and takes an address, or the first three numbers of a network to search address by address
   dhcp   - Home Assistant noticed a device with a zencontrol network card; one click adds it
 """
 
@@ -118,6 +119,42 @@ async def _find_controllers(hass: HomeAssistant) -> list[FoundController]:
     return await scan(targets, DEFAULT_PORT)
 
 
+async def _search_network(network: str, port: int) -> list[FoundController]:
+    """Ask each of the 254 addresses of a network (given as its first three numbers) directly.
+
+    Reaches controllers a broadcast cannot: Home Assistant in Docker or in a virtual machine behind NAT,
+    a controller in another VLAN.
+    """
+    return await scan([f"{network}.{last}" for last in range(1, 255)], port)
+
+
+def _typed_network(text: str) -> str | None:
+    """First three numbers of the network a form entry names, None when it names one address.
+
+    '192.168.1', '192.168.1.', '192.168.1.*', '192.168.1.0' and '192.168.1.0/24' all give '192.168.1'.
+    """
+    parts = text.strip().lower().removesuffix("/24").split(".")
+    if len(parts) == 4 and parts[3] in ("", "0", "*", "x"):
+        parts = parts[:3]
+    if len(parts) != 3 or not all(p.isdigit() and int(p) <= 255 for p in parts):
+        return None
+    return ".".join(str(int(p)) for p in parts)
+
+
+def _is_local(network: str) -> bool:
+    """Only private networks are searched: a mistyped number must not send packets to the internet."""
+    return ipaddress.IPv4Address(f"{network}.1").is_private
+
+
+def _network_of(host: str) -> str | None:
+    """First three numbers of a typed IPv4 address in a private network, None for anything else."""
+    try:
+        address = ipaddress.IPv4Address(host)
+    except ValueError:
+        return None
+    return host.rsplit(".", 1)[0] if address.is_private else None
+
+
 async def _detect_event_host(hass: HomeAssistant, controller: str) -> str | None:
     """Address of Home Assistant in the controller's own network, None when there is none.
 
@@ -165,15 +202,19 @@ class ZenTpiConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         self._found: dict[str, FoundController] = {}
+        self._port = DEFAULT_PORT              # port the controllers in _found answered on
         self._discovered: tuple[str, Probe] | None = None
 
     # ------------------------------------------------------------ "Add integration"
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        configured = {entry.data.get(CONF_HOST) for entry in self._async_current_entries()}
-        self._found = {c.host: c for c in await _find_controllers(self.hass) if c.host not in configured}
+        self._found, self._port = self._not_added(await _find_controllers(self.hass)), DEFAULT_PORT
         if self._found:
             return await self.async_step_pick()
-        return await self.async_step_manual()
+        return await self.async_step_not_found()
+
+    def _not_added(self, controllers: list[FoundController]) -> dict[str, FoundController]:
+        configured = {entry.data.get(CONF_HOST) for entry in self._async_current_entries()}
+        return {c.host: c for c in controllers if c.host not in configured}
 
     async def async_step_pick(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Choose one of the controllers found on the network."""
@@ -182,11 +223,11 @@ class ZenTpiConfigFlow(ConfigFlow, domain=DOMAIN):
             host = user_input[CONF_CONTROLLER]
             if host == MANUAL or host not in self._found:
                 return await self.async_step_manual()
-            await self.async_set_unique_id(f"{host}:{DEFAULT_PORT}")
+            await self.async_set_unique_id(f"{host}:{self._port}")
             self._abort_if_unique_id_configured()
-            probe = await _probe(host, DEFAULT_PORT)
+            probe = await _probe(host, self._port)
             if probe.error is None:
-                return await self._create(host, DEFAULT_PORT, probe)
+                return await self._create(host, self._port, probe)
             errors["base"] = probe.error
         texts = _TEXTS.get(self.hass.config.language, _TEXTS["en"])
         options = [SelectOptionDict(value=c.host, label=self._describe(c, texts)) for c in self._found.values()]
@@ -207,19 +248,47 @@ class ZenTpiConfigFlow(ConfigFlow, domain=DOMAIN):
         return f"{controller.label or 'zencontrol'} ({', '.join(details)})"
 
     async def async_step_manual(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Type the controller's address."""
+        """Type the controller's address: chosen from the list of found controllers."""
+        return await self._address_form("manual", user_input)
+
+    async def async_step_not_found(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """The same form, shown when the search found nothing to add; its text says so."""
+        return await self._address_form("not_found", user_input)
+
+    async def _address_form(self, step_id: str, user_input: dict[str, Any] | None) -> ConfigFlowResult:
+        """Take one address, or the first three numbers of a network to search address by address."""
         errors: dict[str, str] = {}
         host, port = DEFAULT_HOST, DEFAULT_PORT
         if user_input is not None and CONF_HOST in user_input:
             host = user_input[CONF_HOST].strip()
             port = user_input[CONF_PORT]
-            await self.async_set_unique_id(f"{host}:{port}")
-            self._abort_if_unique_id_configured()
-            probe = None if user_input.get(CONF_SKIP_TEST) else await _probe(host, port)
-            if probe is None or probe.error is None:
-                return await self._create(host, port, probe)
-            errors["base"] = probe.error
-        return self.async_show_form(step_id="manual", data_schema=_schema(host, port), errors=errors)
+            network = _typed_network(host)
+            if network is not None:
+                if not _is_local(network):
+                    errors[CONF_HOST] = "search_local_only"
+                elif await self._offer(network, port):
+                    return await self.async_step_pick()
+                else:
+                    errors[CONF_HOST] = "none_in_network"
+            else:
+                await self.async_set_unique_id(f"{host}:{port}")
+                self._abort_if_unique_id_configured()
+                probe = None if user_input.get(CONF_SKIP_TEST) else await _probe(host, port)
+                if probe is None or probe.error is None:
+                    return await self._create(host, port, probe)
+                # no reply (a typing mistake, an address that changed): look at its neighbours
+                network = _network_of(host) if probe.error == "cannot_connect" else None
+                if network is not None and await self._offer(network, port):
+                    return await self.async_step_pick()
+                errors["base"] = probe.error
+        return self.async_show_form(step_id=step_id, data_schema=_schema(host, port), errors=errors)
+
+    async def _offer(self, network: str, port: int) -> bool:
+        """Search a network; True when it has controllers to add (the list step then shows them)."""
+        found = self._not_added(await _search_network(network, port))
+        if found:
+            self._found, self._port = found, port
+        return bool(found)
 
     # ------------------------------------------------------------ found by Home Assistant (DHCP)
     async def async_step_dhcp(self, discovery_info: DhcpServiceInfo) -> ConfigFlowResult:
@@ -248,7 +317,7 @@ class ZenTpiConfigFlow(ConfigFlow, domain=DOMAIN):
         """Add the controller; switch events on when Home Assistant is in the controller's network."""
         options: dict[str, Any] = {}
         if probe is not None:                   # None: the connection test was skipped
-            event_host = await _detect_event_host(self.hass, host)
+            event_host = await _detect_event_host(self.hass, host) or self._event_host_of_neighbour(host)
             if event_host and probe.events_to in (None, event_host):
                 options = {
                     CONF_EVENTS: True,
@@ -265,6 +334,21 @@ class ZenTpiConfigFlow(ConfigFlow, domain=DOMAIN):
             data={CONF_HOST: host, CONF_PORT: port},
             options=options,
         )
+
+    def _event_host_of_neighbour(self, controller: str) -> str | None:
+        """This computer's address as typed for another controller of the same network.
+
+        Behind NAT (Docker, a virtual machine) Home Assistant cannot see that address itself; once it was
+        typed for one controller, the next controller of that network uses it too, on its own port.
+        """
+        network = _network_of(controller)
+        if network is None:
+            return None
+        for entry in self._async_current_entries():
+            typed = entry.options.get(CONF_EVENT_HOST)
+            if entry.options.get(CONF_EVENTS) and typed and _network_of(entry.data.get(CONF_HOST, "")) == network:
+                return typed
+        return None
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Change the controller's IP address or port without losing devices and entities."""
@@ -307,10 +391,15 @@ class ZenTpiOptionsFlow(OptionsFlowWithReload):
                 # left empty: Home Assistant's own address in the controller's network, if it has one
                 host = await _detect_event_host(self.hass, self.config_entry.data[CONF_HOST])
             values[CONF_EVENT_HOST] = host or ""
-            if user_input[CONF_EVENTS] and host is None:
+            if not user_input[CONF_EVENTS] and (user_input[CONF_SENSORS] or user_input[CONF_BUTTONS]):
+                # without events neither would ever appear, and nothing would say why
+                errors[CONF_EVENTS] = "events_required"
+            elif user_input[CONF_EVENTS] and host is None:
                 errors[CONF_EVENT_HOST] = "event_host_required"
             elif user_input[CONF_EVENTS] and host == self.config_entry.data[CONF_HOST]:
                 errors[CONF_EVENT_HOST] = "event_host_is_controller"
+            elif user_input[CONF_EVENTS] and user_input[CONF_EVENT_PORT] in self._ports_of_others():
+                errors[CONF_EVENT_PORT] = "event_port_in_use"
             else:
                 return self.async_create_entry(data=values)
         schema = vol.Schema({
@@ -322,7 +411,7 @@ class ZenTpiOptionsFlow(OptionsFlowWithReload):
             vol.Optional(
                 CONF_EVENT_HOST, description={"suggested_value": values.get(CONF_EVENT_HOST) or ""}
             ): str,
-            vol.Required(CONF_EVENT_PORT, default=values.get(CONF_EVENT_PORT, DEFAULT_EVENT_PORT)): cv.port,
+            vol.Required(CONF_EVENT_PORT, default=values.get(CONF_EVENT_PORT) or self._free_port()): cv.port,
             vol.Required(CONF_SENSORS, default=values.get(CONF_SENSORS, False)): bool,
             vol.Required(CONF_BUTTONS, default=values.get(CONF_BUTTONS, False)): bool,
             vol.Required(
@@ -330,3 +419,17 @@ class ZenTpiOptionsFlow(OptionsFlowWithReload):
             ): vol.All(vol.Coerce(int), vol.Range(min=MIN_OCCUPANCY_HOLD, max=MAX_OCCUPANCY_HOLD)),
         })
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
+
+    def _ports_of_others(self) -> set[int]:
+        """Event ports the other controllers of this integration listen on."""
+        return {
+            entry.options.get(CONF_EVENT_PORT, DEFAULT_EVENT_PORT)
+            for entry in self.hass.config_entries.async_entries(DOMAIN)
+            if entry.entry_id != self.config_entry.entry_id and entry.options.get(CONF_EVENTS)
+        }
+
+    def _free_port(self) -> int:
+        taken, port = self._ports_of_others(), DEFAULT_EVENT_PORT
+        while port in taken:
+            port += 1
+        return port

@@ -11,14 +11,28 @@
       },
       "manual": {
         "title": "zencontrol TPI Advanced (Unilight)",
-        "description": "Lokalne połączenie z kontrolerem zencontrol przez TPI Advanced (UDP). Kontroler musi mieć licencję TPI Advanced i być w tej samej sieci co ten komputer.",
+        "description": "Wpisz adres IP kontrolera. Jeśli go nie znasz, wpisz trzy pierwsze liczby adresu swojej sieci (na przykład 192.168.1), a Home Assistant ją przeszuka. Kontroler musi mieć licencję TPI Advanced.",
         "data": {
-          "host": "IP kontrolera",
+          "host": "Adres IP kontrolera albo sieć do przeszukania",
           "port": "Port UDP",
           "skip_test": "Pomiń test połączenia"
         },
         "data_description": {
-          "host": "Adres IP kontrolera w sieci lokalnej.",
+          "host": "Na przykład 192.168.1.57. Żeby przeszukać całą sieć, wpisz trzy pierwsze liczby jej adresów, na przykład 192.168.1 (takie same jak w adresie routera).",
+          "port": "TPI używa portu UDP 5108.",
+          "skip_test": "Zaznacz tylko, gdy TPI na pewno jest włączone, a test nie przechodzi."
+        }
+      },
+      "not_found": {
+        "title": "Nie znaleziono kontrolera automatycznie",
+        "description": "Home Assistant przeszukał swoją sieć i nie znalazł kontrolera zencontrol do dodania. To normalne, gdy Home Assistant działa w Dockerze albo w maszynie wirtualnej lub gdy kontroler jest w innej sieci.\n\nWpisz adres IP kontrolera. Jeśli go nie znasz, wpisz trzy pierwsze liczby adresu swojej sieci (na przykład 192.168.1), a Home Assistant ją przeszuka.",
+        "data": {
+          "host": "Adres IP kontrolera albo sieć do przeszukania",
+          "port": "Port UDP",
+          "skip_test": "Pomiń test połączenia"
+        },
+        "data_description": {
+          "host": "Na przykład 192.168.1.57. Żeby przeszukać całą sieć, wpisz trzy pierwsze liczby jej adresów, na przykład 192.168.1 (takie same jak w adresie routera).",
           "port": "TPI używa portu UDP 5108.",
           "skip_test": "Zaznacz tylko, gdy TPI na pewno jest włączone, a test nie przechodzi."
         }
@@ -40,7 +54,9 @@
     "error": {
       "cannot_connect": "Kontroler nie odpowiada. Sprawdź adres IP, czy ten komputer jest w tej samej sieci co kontroler i czy TPI jest włączone.",
       "paid_feature": "Kontroler odpowiedział PAID_FEATURE: TPI Advanced nie jest licencjonowane albo włączone na tym kontrolerze.",
-      "unexpected_reply": "Kontroler odpowiedział błędem. Zobacz Ustawienia > System > Dzienniki (szukaj zencontrol)."
+      "unexpected_reply": "Kontroler odpowiedział błędem. Zobacz Ustawienia > System > Dzienniki (szukaj zencontrol).",
+      "none_in_network": "W tej sieci nie znaleziono kontrolera zencontrol do dodania. Sprawdź liczby oraz to, czy kontroler jest włączony i podłączony do sieci.",
+      "search_local_only": "Przeszukać można tylko sieć lokalną: jej adresy zaczynają się od 192.168., 10. albo 172.16-172.31."
     },
     "abort": {
       "already_configured": "Ten kontroler jest już dodany.",
@@ -74,6 +90,8 @@
       }
     },
     "error": {
+      "events_required": "Czujniki ruchu i klawisze paneli wymagają zdarzeń z kontrolera. Zaznacz to pole.",
+      "event_port_in_use": "Na tym porcie zdarzenia odbiera już inny kontroler. Wybierz inny, na przykład kolejny numer.",
       "event_host_required": "Nie udało się wykryć adresu tego komputera. Wpisz jego adres IPv4, na przykład 192.168.1.57.",
       "event_host_is_controller": "To jest adres kontrolera. Wpisz adres komputera z Home Assistantem."
     }

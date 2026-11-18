@@ -88,7 +88,13 @@ Gotowe. Każda nazwana oprawa i każda grupa z zencontrol jest teraz światłem 
 **Lista się nie pojawiła?** Kliknij **Konfiguracja** na stronie integracji albo wejdź w
 Ustawienia → Urządzenia oraz usługi → **Dodaj integrację** i wpisz `zencontrol`.
 
-**Twojego kontrolera nie ma na liście?** Wybierz **Wpisz adres ręcznie** i podaj adres IP kontrolera.
+**Zamiast listy widzisz „Nie znaleziono kontrolera automatycznie”?** Tak bywa, gdy Home Assistant działa
+w Dockerze albo w maszynie wirtualnej. Wpisz adres IP kontrolera. Jeśli go nie znasz, wpisz trzy pierwsze
+liczby adresu swojej sieci, na przykład `192.168.1` (takie same jak w adresie routera): Home Assistant
+przeszuka ją i pokaże listę.
+
+**Twojego kontrolera nie ma na liście?** Wybierz **Wpisz adres ręcznie** i podaj adres IP kontrolera
+albo trzy pierwsze liczby adresu sieci, w której jest kontroler.
 Zobacz też [Gdy coś nie działa](#gdy-coś-nie-działa).
 
 ## Gdzie to potem znaleźć
@@ -114,13 +120,13 @@ Pozostałych pól nie trzeba zmieniać.
 
 | Co widzisz | Co zrobić |
 |---|---|
-| Kontrolera nie ma na liście | Sprawdź, czy Home Assistant i kontroler są w tej samej sieci. Jeśli Home Assistant działa w Dockerze albo w maszynie wirtualnej, wybierz „Wpisz adres ręcznie” i podaj adres IP kontrolera. |
-| Nie znam adresu IP kontrolera | Zobacz listę urządzeń w routerze albo uruchom `ZNAJDZ_KONTROLER.bat` z folderu [`tools`](../tools/) na komputerze w tej samej sieci. |
+| Kontrolera nie ma na liście | Sprawdź, czy Home Assistant i kontroler są w tej samej sieci. Jeśli Home Assistant działa w Dockerze albo w maszynie wirtualnej, wybierz „Wpisz adres ręcznie” i podaj adres IP kontrolera albo trzy pierwsze liczby adresu sieci (np. `192.168.1`). |
+| Nie znam adresu IP kontrolera | W polu adresu wpisz trzy pierwsze liczby adresu swojej sieci (np. `192.168.1`), a Home Assistant ją przeszuka. Możesz też zobaczyć listę urządzeń w routerze albo uruchomić `ZNAJDZ_KONTROLER.bat` z folderu [`tools`](../tools/) na komputerze w tej samej sieci. |
 | „Kontroler nie odpowiada” | Zły adres IP, inna sieć albo wyłączone TPI na kontrolerze. |
 | „Kontroler odpowiedział PAID_FEATURE” | Kontroler nie ma licencji TPI Advanced. Skontaktuj się ze sprzedawcą. |
 | GitHub pokazuje „Expired user code” | Kod wygasł albo okno z kodem zostało zamknięte. Wróć do kroku 2 i użyj nowego kodu. |
 | Home Assistant prosi o ponowne uruchomienie | Zgódź się. Dzieje się tak głównie przy aktualizacji integracji. |
-| Światła działają, ale stan odświeża się z opóźnieniem | Zdarzenia z kontrolera nie docierają. W ustawieniach integracji włącz „Odbieraj zdarzenia z kontrolera”. W Dockerze wpisz tam adres IP komputera z Home Assistantem i przekaż do kontenera port UDP 6969. |
+| Światła działają, ale stan odświeża się z opóźnieniem | Zdarzenia z kontrolera nie docierają. W ustawieniach integracji włącz „Odbieraj zdarzenia z kontrolera”. W Dockerze wpisz tam adres IP komputera z Home Assistantem i przekaż do kontenera port UDP 6969 (każdy kolejny kontroler używa następnego: 6970, 6971...). |
 
 Nie pomogło? [Zgłoś problem](https://github.com/unilight-i/ha-zencontrol-tpi-advanced/issues) i podaj wersję
 Home Assistanta, firmware kontrolera oraz fragment logu (Ustawienia → System → Logi, szukaj `zencontrol`).

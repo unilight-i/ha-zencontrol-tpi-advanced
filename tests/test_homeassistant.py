@@ -50,7 +50,7 @@ async def later(hass: HomeAssistant, seconds: float) -> None:
 # ------------------------------------------------------------------ setup form
 async def test_config_flow_success(hass: HomeAssistant, fake):
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
-    assert result["type"] is FlowResultType.FORM and result["step_id"] == "manual"
+    assert result["type"] is FlowResultType.FORM and result["step_id"] == "not_found"
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_HOST: "127.0.0.1", CONF_PORT: fake.port})
     await hass.async_block_till_done()

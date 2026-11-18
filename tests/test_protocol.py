@@ -223,6 +223,8 @@ async def test_event_and_control_device_queries(fake):
     assert fake.sent(0x40) == [h("40 06 1B 39 C0 A8 01 39")]
     assert (await client.enable_events(0x41)).ok
     assert await client.query_event_unicast() == (0x41, 6969, "192.168.1.57")
+    # as real controllers answer: the port's low byte first, the opposite of the SET command above
+    assert (await client.request(0x41)).data == h("41 39 1B C0 A8 01 39")
     with pytest.raises(ValueError):
         await client.set_event_unicast("192.168.1", 6969)
     assert await client.query_ecd_addresses() == [1, 2, 3, 4, 5]
